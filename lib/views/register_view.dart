@@ -1,4 +1,5 @@
-import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firstapp/services/auth/auth_exceptions.dart';
+import 'package:firstapp/services/auth/auth_service.dart';
 import 'package:firstapp/utility/show_error.dart';
 import 'package:flutter/material.dart';
 import 'dart:developer' as devtools show log;
@@ -60,26 +61,37 @@ class _RegisterViewState extends State<RegisterView> {
               final email = _email.text;
               final password = _password.text;
               try {
-                await FirebaseAuth.instance.createUserWithEmailAndPassword(
-                    email: email, password: password);
-                final user = FirebaseAuth.instance.currentUser;
-                user?.sendEmailVerification();
+                await AuthService.firebase().createUser(
+                  email: email,
+                  password: password,
+                );
+                final user = AuthService.firebase().currentUser;
+                AuthService.firebase().sendEmailVerification();
                 Navigator.of(context).pushNamed(
                   verifyEmailRout,
                 );
-              } on FirebaseAuthException catch (e) {
-                if (e.code == 'weak-password') {
-                  await showError(context, 'Weak password');
-                } else if (e.code == 'email-already-in-use') {
-                  await showError(context, 'Email is already in use');
-                } else if (e.code == 'invalid-email') {
-                  await showError(context, 'Invalid email');
-                } else {
-                  await showError(context, 'Error : ${e.code}');
-                }
-              } catch (e) {
-                await showError(context, e.toString());
+              } on WeakPasswordAuthException {
+                await showError(context, 'Weak password');
+              } on EmailAlreadyInUseAuthException {
+                await showError(context, 'Email is already in use');
+              } on InvalidEmailAuthException {
+                await showError(context, 'Invalid email');
+              } on GenericAuthException {
+                await showError(context, 'Failed to register');
               }
+              // on FirebaseAuthException catch (e) {
+              //   if (e.code == 'weak-password') {
+
+              //   } else if (e.code == 'email-already-in-use') {
+
+              //   } else if (e.code == 'invalid-email') {
+              //     await showError(context, 'Invalid email');
+              //   } else {
+              //     await showError(context, 'Error : ${e.code}');
+              //   }
+              // } catch (e) {
+
+              // }
             },
             child: const Text('Register'),
           ),

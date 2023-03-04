@@ -1,9 +1,12 @@
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_core/firebase_core.dart';
 import 'package:firstapp/services/auth/auth_exceptions.dart';
 import 'package:firstapp/services/auth/auth_provider.dart';
 import 'package:firstapp/services/auth/auth_user.dart';
 
-class FirbaseAuthProvider implements AuthProvider {
+import '../../firebase_options.dart';
+
+class FirebaseAuthProvider implements AuthProvider {
   @override
   Future<AuthUser> createUser({
     required String email,
@@ -92,5 +95,12 @@ class FirbaseAuthProvider implements AuthProvider {
     } else {
       throw UserNotFoundAuthException();
     }
+  }
+
+  @override
+  Future<void> initialize() async {
+    await Firebase.initializeApp(
+      options: DefaultFirebaseOptions.currentPlatform,
+    );
   }
 }
